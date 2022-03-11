@@ -8,9 +8,9 @@
 
 	Contrairement a la convention du tp precedent, pour modeliser une case libre
 	dans une matrice on n'utilise pas une constante speciale (ex : nil, 'vide', 'libre','inoccupee' ...);
-	On utilise plutôt un identificateur de variable, qui n'est pas unifiee (ex : X, A, ... ou _) .
+	On utilise plutï¿½t un identificateur de variable, qui n'est pas unifiee (ex : X, A, ... ou _) .
 	La situation initiale est une "matrice" 3x3 (liste de 3 listes de 3 termes chacune)
-	où chaque terme est une variable libre.	
+	oï¿½ chaque terme est une variable libre.	
 	Chaque coup d'un des 2 joureurs consiste a donner une valeur (symbole x ou o) a une case libre de la grille
 	et non a deplacer des symboles deja presents sur la grille.		
 	
@@ -25,6 +25,10 @@
 situation_initiale([ [_,_,_],
                      [_,_,_],
                      [_,_,_] ]).
+
+situation_test([[x,o,o],
+				[o,x,x],
+				[x,x,_]]).
 
 	% Convention (arbitraire) : c'est x qui commence
 
@@ -44,7 +48,7 @@ adversaire(o,x).
 	 continuer a jouer (quel qu'il soit).
 	 ****************************************************/
 
-% situation_terminale(_Joueur, Situation) :-   ? ? ? ? ?
+situation_terminale(_Joueur, Situation) :- ground(Situation).
 
 	/***************************
 	DEFINITIONS D'UN ALIGNEMENT
@@ -59,9 +63,10 @@ alignement(D, Matrix) :- diagonale(D,Matrix).
  	 existant dans une matrice carree NxN.
 	 ********************************************/
 	
-% ligne(L, M) :-  ? ? ? ?
+ligne(L, M) :- nth1(N,M,L).  
  
-% colonne(C,M) :- ? ? ? ?
+colonne(C,M) :- transpose(M, MT), nth1(N,MT,C).
+
 
 	/* Definition de la relation liant une diagonale D a la matrice M dans laquelle elle se trouve.
 		il y en a 2 sortes de diagonales dans une matrice carree(https://fr.wikipedia.org/wiki/Diagonale) :
@@ -83,7 +88,9 @@ diagonale(D, M) :-
 
 	% deuxieme definition A COMPLETER
 
-% diagonale(D, M) :- ? ? ? ?
+diagonale(D, M) :-
+	compte(M,K),
+	seconde_diag(K,D,M).
 
 	
 premiere_diag(_,[],[]).
@@ -92,7 +99,17 @@ premiere_diag(K,[E|D],[Ligne|M]) :-
 	K1 is K+1,
 	premiere_diag(K1,D,M).
 
-% seconde_diag(K,M,D) :- ? ? ? ?
+compte([],0).
+compte([H|T],L):-compte(T,L1), L is L1+1.
+
+seconde_diag(_,[],[]).
+seconde_diag(K,[E|D],[Ligne|M]) :-
+	nth1(K, Ligne, E ),
+	K2 is K-1,
+	seconde_diag(K2,D,M).
+
+
+
 
 
 	/*****************************
@@ -110,8 +127,9 @@ possible(  [],  _).
 	*/
 
 % A FAIRE 
-% unifiable(X,J) :- ? ? ? ? ?
-	
+unifiable(X,_) :- var(X).
+unifiable(X,X).
+
 	/**********************************
 	 DEFINITION D'UN ALIGNEMENT GAGNANT
 	 OU PERDANT POUR UN JOUEUR DONNE J

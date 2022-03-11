@@ -167,17 +167,15 @@ delete(N,X,[Y|L], [Y|R]) :-
 	*/
 
 	
-	coordonnees([L,C], Mat, Elt) :- true.    %********
-											 % A FAIRE
-											 %********
+	coordonnees([L,C], Mat, Elt) :- nth1(L,Mat,Ligne), nth1(C,Ligne, Elt).
 
 											 
    %*************
    % HEURISTIQUES
    %*************
    
-heuristique(U,H) :-
-    heuristique1(U, H).  % au debut on utilise l'heuristique 1 
+heuristique(U,H) :- true.
+    %heuristique1(U, H).  % au debut on utilise l'heuristique 1 
 %   heuristique2(U, H).  % ensuite utilisez plutot l'heuristique 2  
    
    
@@ -198,9 +196,16 @@ heuristique(U,H) :-
     % Definir enfin l'heuristique qui détermine toutes les pièces mal placées (voir prédicat findall) 
 	% et les compte (voir prédicat length)
    
-    heuristique1(U, H) :- true.     %********
-                                    % A FAIRE
-                                    %********
+    malPlace(X,U) :- 
+        coordonnees([L,C],U,X), 
+        X\==vide,
+        final_state(Fin), 
+        coordonnees([Li,Co],Fin,X), 
+        ([L,C]\==[Li,Co]).
+
+    heuristique1(U,H) :- 
+        findall(1, (malPlace(_,U)), ListMalPlace), 
+        length(ListMalPlace, H).
    
    
    %****************
@@ -210,9 +215,23 @@ heuristique(U,H) :-
    % Somme des distances de Manhattan à parcourir par chaque piece
    % entre sa position courante et sa positon dans l'etat final
 
+   sommeList([],0).
+   sommeList([H|T],R):-
+      sommeList(T,R1),
+      R is H+R1.
+    
+    dm(E,U,F,R):-
+        coordonnees([L,C],U,E), 
+        coordonnees([Li,Co],F,E),
+        V1 is abs(Li-L),
+        V2 is abs(Co-C),
+        R is (V1+V2).
    
-    heuristique2(U, H) :- true.     %********
-                                    % A FAIRE
-                                    %********
-									
-									
+    heuristique2(U, H) :-
+       final_state(F),
+       findall(D, (malPlace(E,U), dm(E,U,F,D)),ListeDeux), 
+       sommeList(ListeDeux,H).
+
+
+
+      %FIN%

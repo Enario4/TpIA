@@ -1,0 +1,8 @@
+1.2) Situation_initiale défini une matrice correspondant au plateau
+de jeu lorsque la partie n'a pas encore commencé.
+
+Joueur_initial(J) implique que J va correspondre aux "x" dans le jeu
+et va être le joueur qui commence.
+
+situation_initiale(S), nth1(3,S,Lig), nth1(2,Lig,o) 
+insére dans le deuxième élément de la 3 ème ligne le motif "o".

@@ -1,0 +1,29 @@
+Réponses sujet TP taquin 
+1/
+a) 
+final_state([[1, 2, 3, 4],
+             [5, 6, 7, 8],
+             [9, 10, 11, 12],
+             [13, 14, 15, vide]]).
+
+b)
+?- initial_state(Ini), nth1(L,Ini,Ligne), nth1(C,Ligne, d).
+ Sert à connaitre les coordonnées (L,C) de l'élément d dans la matrice Ini
+
+?- final_state(Fin), nth1(3,Fin,Ligne), nth1(2,Ligne,P)
+Sert à connaitre l'élément P positionné aux coordonnées (3,2) dans la matrice fin
+
+c)P=a 
+initial_state(Ini), nth1(L,Ini,Ligne), nth1(C,Ligne, a), 
+final_state(Fin), nth1(L,Fin,LigneDeux), nth1(C,LigneDeux,a).
+
+d) 
+initial_state(Ini), (rule(up,1,Ini,S) ; rule(left,1,Ini,S) ; rule(right,1,Ini,S)).
+
+e) 
+findall(S, (initial_state(Ini), (rule(up,1,Ini,S) ; rule(left,1,Ini,S) ; rule(right,1,Ini,S))), ListNext).
+
+f)
+findall([A,S],(initial_state(Ini), rule(A,1,Ini,S)), ListNextAction).
+
+2/ (voir code taquin)
