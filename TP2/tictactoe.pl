@@ -128,7 +128,7 @@ possible(  [],  _).
 
 % A FAIRE 
 unifiable(X,_) :- var(X).
-unifiable(X,X).
+unifiable(X,J) :- ground(X), X==J.
 
 	/**********************************
 	 DEFINITION D'UN ALIGNEMENT GAGNANT
@@ -157,9 +157,11 @@ possible pour J qui n'a aucun element encore libre.
 
 % A FAIRE
 
-% alignement_gagnant(Ali, J) :- ? ? ? ?
+alignement_gagnant(Ali, J) :- possible(Ali,J), ground(Ali).
 
-% alignement_perdant(Ali, J) :- ? ? ? ?
+alignement_perdant(Ali, J) :- 
+	adversaire(J,J2),
+	alignement_gagnant(Ali,J2).
 
 
 	/* ****************************
@@ -173,7 +175,12 @@ possible pour J qui n'a aucun element encore libre.
 	*/	
 
 % A FAIRE
-% successeur(J, Etat,[L,C]) :- ? ? ? ?  
+successeur(J, Etat,[L,C]) :- 
+	nth1(L,Etat,Ligne), 
+	nth1(C,Ligne,E),
+	var(E),
+	J=E.
+
 
 	/**************************************
    	 EVALUATION HEURISTIQUE D'UNE SITUATION
