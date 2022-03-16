@@ -53,10 +53,57 @@
 	- finalement le couple retourne par negamax est [Coup, V2]
 	avec : V2 is -V1 (cf. convention negamax vue en cours).
 
-A FAIRE : ECRIRE ici les clauses de negamax/5
-.....................................
-	*/
+A FAIRE : ECRIRE ici les clauses de negamax/5 */
 
+%.....................................
+
+/* 1/ la profondeur maximale est atteinte : on ne peut pas
+	developper cet Etat ; 
+	il n'y a donc pas de coup possible a jouer (Coup = rien)
+	et l'evaluation de Etat est faite par l'heuristique.*/
+
+	negamax(J, Etat, Pmax, Pmax, [[], Val]):- 
+	heuristique(J,Etat,Val).
+
+/*	2/ la profondeur maximale n'est pas  atteinte mais J ne
+	peut pas jouer ; au TicTacToe un joueur ne peut pas jouer
+	quand le tableau est complet (totalement instancie) ;
+	il n'y a pas de coup a jouer (Coup = rien)
+	et l'evaluation de Etat est faite par l'heuristique.
+*/
+	negamax(J, Etat, P, Pmax, [[], Val]):- 
+		P<Pmax,
+		heuristique(J,Etat,Val),	
+		ground(Etat).
+/*	3/ la profondeur maxi n'est pas atteinte et J peut encore
+	jouer. Il faut evaluer le sous-arbre complet issu de Etat ; 
+
+	- on determine d'abord la liste de tous les couples
+	[Coup_possible, Situation_suivante] via le predicat
+	 successeurs/3 (deja fourni, voir plus bas).
+
+	- cette liste est passee a un predicat intermediaire :
+	loop_negamax/5, charge d'appliquer negamax sur chaque
+	Situation_suivante ; loop_negamax/5 retourne une liste de
+	couples [Coup_possible, Valeur]
+
+	- parmi cette liste, on garde le meilleur couple, c-a-d celui
+	qui a la plus petite valeur (cf. predicat meilleur/2);
+	soit [C1,V1] ce couple optimal. Le predicat meilleur/2
+	effectue cette selection.
+
+	- finalement le couple retourne par negamax est [Coup, V2]
+	avec : V2 is -V1 (cf. convention negamax vue en cours).
+*/
+
+	negamax(J, Etat, P, Pmax, [Coup, Val]):-
+		P<Pmax,
+		not(ground(Etat)),
+		successeurs(J,Etat,Succ),
+		loop_negamax(J,P,Pmax,Succ,ValSucc),
+		meilleur(ValSucc, [C1,V1]),
+		Val is -V1,
+		Coup = C1.
 
 	/*******************************************
 	 DEVELOPPEMENT D'UNE SITUATION NON TERMINALE
@@ -89,10 +136,18 @@ successeurs(J,Etat,Succ) :-
 
 loop_negamax(_,_, _  ,[],                []).
 loop_negamax(J,P,Pmax,[[Coup,Suiv]|Succ],[[Coup,Vsuiv]|Reste_Couples]) :-
-	loop_negamax(J,P,Pmax,Succ,Reste_Couples),
-	adversaire(J,A),
-	Pnew is P+1,
-	negamax(A,Suiv,Pnew,Pmax, [_,Vsuiv]).
+	loop_negamax(J,P,Pmax,Succ,Reste_Couples), %On remonte tous les couples
+	%[Coup, Situation_Suivante] jusqu'au premier
+	adversaire(J,A), %on défini A, l'adversaire de J
+	Pnew is P+1, %on met à jour la profondeur car on vient de jouer un coup
+	negamax(A,Suiv,Pnew,Pmax, [_,Vsuiv]). %on applique negamax pour l'adversaire
+	%avec la nouvelle profondeur, l'Etat correspond à la prochaine situation (Suiv),
+	%[_,Vsuiv], on obtient juste la valeur de l'heuristique de la situation suivante 
+	%avec Vsuiv. On n'indique pas de coup "_" car seul la valeur de l'heuristique 
+	%nous importe dans cette fonction, le coup sera défini dans le corps de la fonction
+	%negamax. loop_negamax s'occupe simplement d'explorer les différents états possibles
+	%à partir d'une situation donnée et d'une profondeur max pour nous donner la bonne 
+	%heuristique
 
 	/*
 
@@ -118,6 +173,29 @@ A FAIRE : commenter chaque litteral de la 2eme clause de loop_negamax/5,
 
 A FAIRE : ECRIRE ici les clauses de meilleur/2
 	*/
+	%meilleur([],[_,10000]).
+	meilleur([E],E).
+	
+	
+	meilleur([[C1,V1]|L], [C,V]):-
+	/*V1 < V,
+	meilleur(L,[C1,V1]).
+
+	meilleur([[C1,V1]|L], [C,V]):-
+	V1 >= V,
+	meilleur(L,[C,V]).*/
+
+	meilleur(L,[C2,V2]),
+	V1<V2,
+	V=V1,
+	C=C1.
+
+	meilleur([[C1,V1]|L], [C,V]):-
+	meilleur(L,[C2,V2]),
+	V2=<V1,
+	V=V2,
+	C=C2.
+
 
 
 
@@ -126,8 +204,9 @@ A FAIRE : ECRIRE ici les clauses de meilleur/2
   	*******************/
 
 main(B,V, Pmax) :-
-
-	true.        
+	joueur_initial(J),
+	situation_initiale(I),
+	negamax(J,I,0,Pmax,[B,V]).
 
 
 	/*
