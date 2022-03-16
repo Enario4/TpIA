@@ -210,7 +210,26 @@ heuristique(J,Situation,H) :-		% cas 2
 % on ne vient ici que si les cut precedents n'ont pas fonctionne,
 % c-a-d si Situation n'est ni perdante ni gagnante.
 
+
+
+%nbAlignPos(J,Situation,Forbidden,N):-
+%	alignement(Align,Situation),
+
+	%possible(Align,J),
+
+
 % A FAIRE 					cas 3
-% heuristique(J,Situation,H) :- ? ? ? ?
+%heuristique(_,[],0).
+heuristique(J,Situation,H) :-
+	listAlignPos(J,Situation,L1),
+	adversaire(J2,J),
+	listAlignPos(J2,Situation,L2),
+	length(L1,H1),
+	length(L2,H2),
+	H is (H1-H2).
+
+
+listAlignPos(J,Situation,L):-
+	findall(Align,(alignement(Align,Situation),possible(Align,J)),L).
 
 
