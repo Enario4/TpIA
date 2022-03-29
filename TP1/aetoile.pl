@@ -49,45 +49,119 @@ Predicat principal de l'algorithme :
 
 main :-
 	% initialisations Pf, Pu et Q 
-	final_state(Ini),
-	heuristique2(Ini,H),
-	Data=[H,H,0],
+	%final_state(Ini),
+	initial_state(Ini),
+	heuristique2(Ini,H0),
+	G0 is 0,
+	F0 is H0+G0,
+	Data=[F0,H0,G0],
 
 	empty(Pfi),
 	empty(Pui),
-	empty(Qi),
+	empty(Q),
 	insert([Data,Ini],Pfi,Pf),
 	insert([Ini,Data,nil,nil],Pui,Pu),
-	
+	write('\n'),
+	write(Data),
 	% lancement de Aetoile
 	aetoile(Pf,Pu,Q).
-	
-
 
 %*******************************************************************************
 affiche_solution(Q):-
-	write('affiche sol'),
+	write('	affiche sol'),
 	final_state(Fin),
 	affiche_solution(Q,Fin).
+
+affiche_solution(_,nil):-
+	write2('	Fin de solution').
 
 affiche_solution(Q,Arr):-
 	suppress([Arr,_,Pere,A],Q,Q2),
 	affiche_solution(Q2,Pere),
-	write(A).
+	write2('\n'),
+	write2(A),
+	write2('\n').
+
+write2(nil).
+write2(E):-
+	write(E).
 
 
-aetoile(nil,nil,_) :- 
+
+expand(U,Gu,Succs):-
+
+	findall([S, [Fs,Hs,Gs], U, A], 
+				(rule(A,1,U,S),
+				Gs is Gu+1,
+				heuristique2(S,Hs), 
+				Fs is Hs+Gs), 
+				Succs).
+
+loop_successors(Pfs,Pus,_,[],Pfs,Pus).
+
+loop_successors(Pf,Pu,Q,[[S,[F,H,G],_,_]|RS],Pff,Puf):-
+	belongs([S,_,_,_],Q),
+	%write('lp1'),
+	loop_successors(Pf,Pu,Q,RS,Pff,Puf).
+
+loop_successors(Pf,Pu,Q,[[S,[Fs,Hs,_],_,_]|RS],Pff,Puf):-
+	not(belongs([S,_,_,_],Q)),
+	belongs([S,[F,H,_],_,_],Pu),
+	(F<Fs ; F==Fs),
+	%write('lp2'),
+	loop_successors(Pf,Pu,Q,RS,Pff,Puf).
+
+loop_successors(Pf,Pu,Q,[[S,[Fs,Hs,Gs],Pere,A]|RS],Pff,Puf):-
+	not(belongs([S,_,_,_],Q)),
+	belongs([S,[F,H,_],_,_],Pu),
+	(F>Fs ; F==Fs),
+	suppress([S,[F,_,_],_,_],Pu,Pus),
+	suppress([[F,_,_],S],Pf,Pfs),
+	insert([S,[Fs,Hs,Gs],Pere,A],Pus,Puf),
+	insert([[Fs,Hs,Gs],S],Pfs,Pff),
+	%write('lp3'),
+	loop_successors(Pff,Puf,Q,RS,Pff,Puf).
+
+loop_successors(Pf,Pu,Q,[[S,[Fs,Hs,Gs],Pere,A]|RS],Pff,Puf):-
+	not(belongs([S,_,_,_],Q)),
+	not(belongs([S,_,_,_],Pu)),
+	insert([S,[Fs,Hs,Gs],Pere,A],Pu,Pus),
+	insert([[Fs,Hs,Gs],S],Pf,Pfs),
+	%write('lp4'),
+	loop_successors(Pfs,Pus,Q,RS,Pff,Puf).
+
+
+
+
+aetoile(nil,nil,_):- 
 	write('PAS de SOLUTION : L ETAT FINAL N EST PAS ATTEIGNABLE ! ').
 
-aetoile(Pf,_,Q):-
+aetoile(Pf,Pu,Q):-
 	final_state(Fin),
-	suppress_min([_,Fin],Pf,_),
-	affiche_solution(Q).
+	suppress_min([[F,H,G],Fin],Pf,_),
+	suppress([Fin,[F,H,G],Pere,A],Pu,_),
+	insert([Fin,[F,H,G],Pere,A],Q,Qfinal),
+	write('aetoile Fin'),
+	affiche_solution(Qfinal).
 
+aetoile(Pf,Pu,Q):-
+%on enlève le nœud de Pf correspondant à l’état U à développer (celui de valeur F minimale) et on enlève aussi le nœud
+%frère associé dans Pu 
+	suppress_min([[F,H,G],U],Pf,Pf2),
+	suppress([U,[F,H,G],Pere,A],Pu,Pu2),
+	expand(U,G,Succ),
+	loop_successors(Pf2,Pu2,Q,Succ,Pff,Puf),
+	%write('\n'),
+	%write(Pff),
+	%write('\n'),
 
-%aetoile(Pf, Ps, Qs) :- true.
+	insert([U,[F,H,G],Pere,A],Q,Q2),
+	aetoile(Pff,Puf,Q2).
 
 	
+
+
+%Term1 @< Term2 est vrai si Term1 précède Term2 dans l'ordre lexicographique,
 	
 
 	
